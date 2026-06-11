@@ -15,11 +15,10 @@
       --rest: #16a34a;
       --danger: #dc2626;
       --border: #e5e7eb;
+      --gold: #f59e0b;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -34,7 +33,7 @@
 
     .app {
       width: 100%;
-      max-width: 560px;
+      max-width: 580px;
     }
 
     .card {
@@ -63,6 +62,17 @@
       font-size: 15px;
     }
 
+    .settings {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .settings label {
+      margin-bottom: 6px;
+    }
+
     .status {
       display: inline-block;
       padding: 8px 14px;
@@ -79,8 +89,8 @@
     }
 
     .status.finished {
-      background: #fee2e2;
-      color: #991b1b;
+      background: #fef3c7;
+      color: #92400e;
     }
 
     .exercise {
@@ -116,9 +126,7 @@
       transition: width 0.2s linear, background 0.2s linear;
     }
 
-    .progress.rest {
-      background: var(--rest);
-    }
+    .progress.rest { background: var(--rest); }
 
     .next {
       color: var(--muted);
@@ -127,7 +135,7 @@
       min-height: 24px;
     }
 
-    .buttons {
+    .buttons, .diary-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
@@ -147,36 +155,22 @@
       min-height: 56px;
     }
 
-    button:hover {
-      background: var(--primary-dark);
-    }
+    button:hover { background: var(--primary-dark); }
 
-    button.secondary {
-      background: #4b5563;
-    }
+    button.secondary { background: #4b5563; }
+    button.secondary:hover { background: #374151; }
 
-    button.secondary:hover {
-      background: #374151;
-    }
+    button.danger { background: var(--danger); }
+    button.danger:hover { background: #b91c1c; }
 
-    button.danger {
-      background: var(--danger);
-    }
-
-    button.danger:hover {
-      background: #b91c1c;
-    }
+    button.gold { background: var(--gold); }
+    button.gold:hover { background: #d97706; }
 
     button.small {
       padding: 10px 12px;
       min-height: 42px;
       font-size: 14px;
       border-radius: 10px;
-    }
-
-    button:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
     }
 
     .menu {
@@ -212,9 +206,44 @@
       line-height: 1.6;
     }
 
-    .form-row {
-      margin-bottom: 12px;
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
     }
+
+    .stat {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .badge-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-weight: 800;
+      color: #92400e;
+    }
+
+    .form-row { margin-bottom: 12px; }
 
     label {
       display: block;
@@ -223,9 +252,7 @@
       font-size: 14px;
     }
 
-    input,
-    textarea,
-    select {
+    input, textarea, select {
       width: 100%;
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -240,11 +267,24 @@
       min-height: 92px;
     }
 
-    .diary-actions {
+    .emoji-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .emoji-option {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      color: var(--text);
+      min-height: 48px;
+      padding: 8px;
+      font-size: 24px;
+    }
+
+    .emoji-option.selected {
+      background: #dbeafe;
+      border-color: var(--primary);
     }
 
     .entries {
@@ -277,6 +317,7 @@
       color: var(--muted);
       font-size: 13px;
       margin-top: 2px;
+      line-height: 1.5;
     }
 
     .entry-note {
@@ -292,25 +333,12 @@
       margin: 8px 0 0;
     }
 
-    @media (max-width: 420px) {
-      body {
-        padding: 12px;
-      }
-
-      .card {
-        padding: 20px;
-      }
-
-      .exercise {
-        font-size: 28px;
-      }
-
-      .timer {
-        font-size: 78px;
-      }
-
-      .buttons,
-      .diary-actions {
+    @media (max-width: 460px) {
+      body { padding: 12px; }
+      .card { padding: 20px; }
+      .exercise { font-size: 28px; }
+      .timer { font-size: 78px; }
+      .buttons, .diary-actions, .settings, .stats {
         grid-template-columns: 1fr;
       }
     }
@@ -320,7 +348,22 @@
   <main class="app">
     <section class="card">
       <h1>腹筋HIITタイマー</h1>
-      <p class="subtitle">45秒トレーニング / 15秒休憩 / 2周</p>
+      <p class="subtitle">45秒トレーニング / 15秒休憩 / セット数変更可</p>
+
+      <div class="settings">
+        <div>
+          <label for="setCount">セット数</label>
+          <input id="setCount" type="number" min="1" max="10" value="2" />
+        </div>
+        <div>
+          <label for="soundVolume">音量</label>
+          <select id="soundVolume">
+            <option value="0.65">普通</option>
+            <option value="0.85" selected>大きめ</option>
+            <option value="1">最大</option>
+          </select>
+        </div>
+      </div>
 
       <div id="status" class="status">準備</div>
       <div id="exercise" class="exercise">スタートを押してください</div>
@@ -343,18 +386,52 @@
         <h2>メニュー</h2>
         <ol id="menuList"></ol>
         <p class="hint">
-          ※ スマホで音が小さい場合は、端末の音量・消音モード・ブラウザの音声許可を確認してください。音は以前より大きめにしています。
+          ※ セット数を変更するとタイマー内容も更新されます。記録欄の「完了セット数」にも反映されます。
         </p>
       </div>
     </section>
 
     <section class="card">
       <h2>トレーニング日記</h2>
+
+      <div class="stats">
+        <div class="stat">
+          <div id="totalSessions" class="stat-number">0</div>
+          <div class="stat-label">累計記録</div>
+        </div>
+        <div class="stat">
+          <div id="currentStreak" class="stat-number">0</div>
+          <div class="stat-label">連続日数</div>
+        </div>
+        <div class="stat">
+          <div id="totalSets" class="stat-number">0</div>
+          <div class="stat-label">累計セット</div>
+        </div>
+      </div>
+
+      <div id="badgeBox" class="badge-box">最初の記録をつけるとバッジが出ます。</div>
+
       <p class="subtitle">記録はこの端末のブラウザ内に保存されます。サーバーは不要です。</p>
 
       <div class="form-row">
         <label for="diaryDate">日付</label>
         <input id="diaryDate" type="date" />
+      </div>
+
+      <div class="form-row">
+        <label>今日の気分</label>
+        <div class="emoji-row">
+          <button type="button" class="emoji-option selected" data-mood="🔥">🔥</button>
+          <button type="button" class="emoji-option" data-mood="💪">💪</button>
+          <button type="button" class="emoji-option" data-mood="😵">😵</button>
+          <button type="button" class="emoji-option" data-mood="😌">😌</button>
+          <button type="button" class="emoji-option" data-mood="🏆">🏆</button>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label for="completedSets">完了セット数</label>
+        <input id="completedSets" type="number" min="0" max="10" value="2" />
       </div>
 
       <div class="form-row">
@@ -370,11 +447,11 @@
 
       <div class="form-row">
         <label for="diaryNote">メモ</label>
-        <textarea id="diaryNote" placeholder="例：レッグレイズがきつかった。プランクは余裕あり。"></textarea>
+        <textarea id="diaryNote" placeholder="例：下腹に効いた。昨日よりマウンテンクライマーが楽だった。"></textarea>
       </div>
 
       <div class="diary-actions">
-        <button id="saveDiaryBtn">記録する</button>
+        <button id="saveDiaryBtn" class="gold">記録する</button>
         <button id="exportBtn" class="secondary">CSV出力</button>
         <button id="clearFormBtn" class="secondary">入力クリア</button>
         <button id="deleteAllBtn" class="danger">全記録削除</button>
@@ -385,45 +462,20 @@
   </main>
 
   <script>
-    const exercises = [
-      "レッグレイズ",
-      "リバースクランチ",
-      "プランク",
-      "マウンテンクライマー"
-    ];
-
+    const exercises = ["レッグレイズ", "リバースクランチ", "プランク", "マウンテンクライマー"];
     const workSeconds = 45;
     const restSeconds = 15;
-    const rounds = 2;
-    const diaryStorageKey = "abWorkoutDiaryEntries_v1";
+    const diaryStorageKey = "abWorkoutDiaryEntries_v2";
 
-    const steps = [];
-    for (let round = 1; round <= rounds; round++) {
-      exercises.forEach((name, index) => {
-        steps.push({
-          type: "work",
-          name,
-          duration: workSeconds,
-          label: `${round}周目：${name}`
-        });
-
-        if (!(round === rounds && index === exercises.length - 1)) {
-          steps.push({
-            type: "rest",
-            name: "休憩",
-            duration: restSeconds,
-            label: "休憩"
-          });
-        }
-      });
-    }
-
+    let setCount = 2;
+    let steps = [];
     let currentStep = 0;
-    let remaining = steps[0].duration;
+    let remaining = workSeconds;
     let running = false;
     let intervalId = null;
     let audioCtx = null;
     let soundVolume = 0.85;
+    let selectedMood = "🔥";
 
     const statusEl = document.getElementById("status");
     const exerciseEl = document.getElementById("exercise");
@@ -435,8 +487,11 @@
     const resetBtn = document.getElementById("resetBtn");
     const soundBtn = document.getElementById("soundBtn");
     const menuList = document.getElementById("menuList");
+    const setCountEl = document.getElementById("setCount");
+    const soundVolumeEl = document.getElementById("soundVolume");
 
     const diaryDateEl = document.getElementById("diaryDate");
+    const completedSetsEl = document.getElementById("completedSets");
     const diaryConditionEl = document.getElementById("diaryCondition");
     const diaryNoteEl = document.getElementById("diaryNote");
     const saveDiaryBtn = document.getElementById("saveDiaryBtn");
@@ -444,6 +499,23 @@
     const clearFormBtn = document.getElementById("clearFormBtn");
     const deleteAllBtn = document.getElementById("deleteAllBtn");
     const entriesEl = document.getElementById("entries");
+    const totalSessionsEl = document.getElementById("totalSessions");
+    const currentStreakEl = document.getElementById("currentStreak");
+    const totalSetsEl = document.getElementById("totalSets");
+    const badgeBoxEl = document.getElementById("badgeBox");
+    const emojiButtons = document.querySelectorAll(".emoji-option");
+
+    function buildSteps() {
+      steps = [];
+      for (let set = 1; set <= setCount; set++) {
+        exercises.forEach((name, index) => {
+          steps.push({ type: "work", name, duration: workSeconds, label: `${set}セット目：${name}` });
+          if (!(set === setCount && index === exercises.length - 1)) {
+            steps.push({ type: "rest", name: "休憩", duration: restSeconds, label: "休憩" });
+          }
+        });
+      }
+    }
 
     function initMenu() {
       menuList.innerHTML = "";
@@ -470,24 +542,18 @@
     }
 
     function ensureAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
     }
 
     function beep(frequency = 1200, duration = 0.22, volume = soundVolume) {
       ensureAudio();
-
       const oscillator = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       const compressor = audioCtx.createDynamicsCompressor();
 
       oscillator.type = "square";
       oscillator.frequency.value = frequency;
-
       compressor.threshold.value = -24;
       compressor.knee.value = 30;
       compressor.ratio.value = 12;
@@ -495,7 +561,6 @@
       compressor.release.value = 0.25;
 
       gain.gain.value = Math.max(0.0001, Math.min(volume, 1));
-
       oscillator.connect(gain);
       gain.connect(compressor);
       compressor.connect(audioCtx.destination);
@@ -508,19 +573,20 @@
     }
 
     function startSignal() {
-      beep(900, 0.16, 0.8);
-      setTimeout(() => beep(1300, 0.22, 0.9), 170);
+      beep(900, 0.16, soundVolume);
+      setTimeout(() => beep(1300, 0.22, soundVolume), 170);
+      if (navigator.vibrate) navigator.vibrate(80);
     }
 
     function finishSignal() {
-      beep(1000, 0.18, 0.9);
-      setTimeout(() => beep(1300, 0.18, 0.9), 220);
-      setTimeout(() => beep(1600, 0.35, 1.0), 440);
+      beep(1000, 0.18, soundVolume);
+      setTimeout(() => beep(1300, 0.18, soundVolume), 220);
+      setTimeout(() => beep(1600, 0.35, 1), 440);
       if (navigator.vibrate) navigator.vibrate([200, 80, 200]);
     }
 
     function countdownSignal() {
-      beep(1500, 0.11, 0.7);
+      beep(1500, 0.11, Math.min(soundVolume, 0.8));
       if (navigator.vibrate) navigator.vibrate(60);
     }
 
@@ -531,7 +597,6 @@
 
       timerEl.textContent = formatTime(remaining);
       progressEl.style.width = `${progress}%`;
-
       statusEl.className = "status";
       progressEl.className = "progress";
 
@@ -539,8 +604,9 @@
         statusEl.textContent = "完了";
         statusEl.classList.add("finished");
         exerciseEl.textContent = "お疲れさまでした";
-        nextEl.textContent = "トレーニング終了";
+        nextEl.textContent = "トレーニング終了。記録をつけましょう。";
         startPauseBtn.textContent = "スタート";
+        completedSetsEl.value = setCount;
         return;
       }
 
@@ -566,7 +632,6 @@
 
     function goNext() {
       currentStep++;
-
       if (currentStep >= steps.length) {
         currentStep = steps.length;
         remaining = 0;
@@ -577,7 +642,6 @@
         updateDisplay();
         return;
       }
-
       remaining = steps[currentStep].duration;
       startSignal();
       updateDisplay();
@@ -585,14 +649,9 @@
 
     function tick() {
       if (!running) return;
-
       if (remaining > 1) {
         remaining--;
-
-        if (remaining <= 3 && remaining > 0) {
-          countdownSignal();
-        }
-
+        if (remaining <= 3 && remaining > 0) countdownSignal();
         updateDisplay();
       } else {
         remaining = 0;
@@ -603,19 +662,14 @@
 
     function startPause() {
       ensureAudio();
-
-      if (currentStep >= steps.length) {
-        reset();
-      }
+      if (currentStep >= steps.length) reset();
 
       running = !running;
       startPauseBtn.textContent = running ? "一時停止" : "再開";
 
       if (running) {
         startSignal();
-        if (!intervalId) {
-          intervalId = setInterval(tick, 1000);
-        }
+        if (!intervalId) intervalId = setInterval(tick, 1000);
       }
 
       updateDisplay();
@@ -636,12 +690,19 @@
       goNext();
     }
 
+    function applySetCountChange() {
+      const value = Number(setCountEl.value);
+      setCount = Math.min(10, Math.max(1, Number.isFinite(value) ? value : 2));
+      setCountEl.value = setCount;
+      completedSetsEl.max = setCount;
+      completedSetsEl.value = setCount;
+      buildSteps();
+      reset();
+    }
+
     function getEntries() {
-      try {
-        return JSON.parse(localStorage.getItem(diaryStorageKey)) || [];
-      } catch {
-        return [];
-      }
+      try { return JSON.parse(localStorage.getItem(diaryStorageKey)) || []; }
+      catch { return []; }
     }
 
     function saveEntries(entries) {
@@ -650,20 +711,31 @@
 
     function clearForm() {
       diaryDateEl.value = todayString();
+      completedSetsEl.value = setCount;
       diaryConditionEl.value = "普通";
       diaryNoteEl.value = "";
+      selectMood("🔥");
+    }
+
+    function selectMood(mood) {
+      selectedMood = mood;
+      emojiButtons.forEach(btn => btn.classList.toggle("selected", btn.dataset.mood === mood));
     }
 
     function saveDiary() {
       const date = diaryDateEl.value || todayString();
       const condition = diaryConditionEl.value;
       const note = diaryNoteEl.value.trim();
+      const completedSets = Math.max(0, Math.min(setCount, Number(completedSetsEl.value) || 0));
 
       const entries = getEntries();
       entries.unshift({
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
         date,
+        mood: selectedMood,
         condition,
+        completedSets,
+        targetSets: setCount,
         note,
         createdAt: new Date().toISOString()
       });
@@ -671,6 +743,7 @@
       saveEntries(entries);
       diaryNoteEl.value = "";
       renderEntries();
+      finishSignal();
     }
 
     function deleteEntry(id) {
@@ -679,8 +752,50 @@
       renderEntries();
     }
 
+    function calcStreak(entries) {
+      const dates = [...new Set(entries.map(e => e.date))].sort().reverse();
+      if (dates.length === 0) return 0;
+
+      let streak = 0;
+      let d = new Date(todayString() + "T00:00:00");
+
+      while (true) {
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        if (dates.includes(key)) {
+          streak++;
+          d.setDate(d.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+
+      return streak;
+    }
+
+    function makeBadge(entries) {
+      const totalSessions = entries.length;
+      const totalSets = entries.reduce((sum, e) => sum + (Number(e.completedSets) || 0), 0);
+      const streak = calcStreak(entries);
+
+      if (totalSessions === 0) return "最初の記録をつけるとバッジが出ます。";
+      if (streak >= 7) return "🏆 7日連続達成。これはかなり強いです。";
+      if (streak >= 3) return "🔥 3日連続達成。習慣化ゾーンに入っています。";
+      if (totalSets >= 50) return "💪 累計50セット突破。腹筋貯金が増えています。";
+      if (totalSets >= 20) return "🥇 累計20セット突破。かなり良いペースです。";
+      if (totalSessions >= 5) return "⭐ 5回記録達成。継続できています。";
+      return "✅ 記録開始。まずは3回継続を狙いましょう。";
+    }
+
+    function renderStats(entries) {
+      totalSessionsEl.textContent = entries.length;
+      currentStreakEl.textContent = calcStreak(entries);
+      totalSetsEl.textContent = entries.reduce((sum, e) => sum + (Number(e.completedSets) || 0), 0);
+      badgeBoxEl.textContent = makeBadge(entries);
+    }
+
     function renderEntries() {
       const entries = getEntries();
+      renderStats(entries);
       entriesEl.innerHTML = "";
 
       if (entries.length === 0) {
@@ -701,11 +816,11 @@
         const info = document.createElement("div");
         const date = document.createElement("div");
         date.className = "entry-date";
-        date.textContent = entry.date;
+        date.textContent = `${entry.mood || "🔥"} ${entry.date}`;
 
         const meta = document.createElement("div");
         meta.className = "entry-meta";
-        meta.textContent = `状態：${entry.condition}`;
+        meta.textContent = `状態：${entry.condition} / 完了：${entry.completedSets || 0}/${entry.targetSets || setCount}セット`;
 
         info.appendChild(date);
         info.appendChild(meta);
@@ -732,18 +847,15 @@
 
     function exportCsv() {
       const entries = getEntries();
-
       if (entries.length === 0) {
         alert("出力する記録がありません。");
         return;
       }
 
-      const header = ["date", "condition", "note", "createdAt"];
+      const header = ["date", "mood", "condition", "completedSets", "targetSets", "note", "createdAt"];
       const rows = entries.map(entry => [
-        entry.date,
-        entry.condition,
-        entry.note || "",
-        entry.createdAt || ""
+        entry.date, entry.mood || "", entry.condition, entry.completedSets || 0,
+        entry.targetSets || "", entry.note || "", entry.createdAt || ""
       ]);
 
       const csv = [header, ...rows]
@@ -769,6 +881,13 @@
       setTimeout(finishSignal, 600);
     });
 
+    setCountEl.addEventListener("change", applySetCountChange);
+    soundVolumeEl.addEventListener("change", () => soundVolume = Number(soundVolumeEl.value));
+
+    emojiButtons.forEach(btn => {
+      btn.addEventListener("click", () => selectMood(btn.dataset.mood));
+    });
+
     saveDiaryBtn.addEventListener("click", saveDiary);
     clearFormBtn.addEventListener("click", clearForm);
     exportBtn.addEventListener("click", exportCsv);
@@ -779,6 +898,7 @@
       }
     });
 
+    buildSteps();
     initMenu();
     clearForm();
     renderEntries();
