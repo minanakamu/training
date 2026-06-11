@@ -34,7 +34,7 @@
 
     .app {
       width: 100%;
-      max-width: 520px;
+      max-width: 560px;
     }
 
     .card {
@@ -43,12 +43,18 @@
       border-radius: 18px;
       padding: 24px;
       box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      margin-bottom: 18px;
     }
 
     h1 {
       margin: 0 0 8px;
       font-size: 28px;
       line-height: 1.2;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin: 0 0 14px;
     }
 
     .subtitle {
@@ -161,6 +167,13 @@
       background: #b91c1c;
     }
 
+    button.small {
+      padding: 10px 12px;
+      min-height: 42px;
+      font-size: 14px;
+      border-radius: 10px;
+    }
+
     button:disabled {
       opacity: 0.55;
       cursor: not-allowed;
@@ -199,7 +212,91 @@
       line-height: 1.6;
     }
 
+    .form-row {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font: inherit;
+      background: #ffffff;
+      color: var(--text);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 92px;
+    }
+
+    .diary-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .entries {
+      margin-top: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .entry {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fbfdff;
+    }
+
+    .entry-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .entry-date {
+      font-weight: 900;
+      font-size: 16px;
+    }
+
+    .entry-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    .entry-note {
+      white-space: pre-wrap;
+      line-height: 1.6;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 8px 0 0;
+    }
+
     @media (max-width: 420px) {
+      body {
+        padding: 12px;
+      }
+
       .card {
         padding: 20px;
       }
@@ -212,7 +309,8 @@
         font-size: 78px;
       }
 
-      .buttons {
+      .buttons,
+      .diary-actions {
         grid-template-columns: 1fr;
       }
     }
@@ -245,9 +343,44 @@
         <h2>メニュー</h2>
         <ol id="menuList"></ol>
         <p class="hint">
-          ※ 音が鳴らない場合は、最初に「スタート」または「音テスト」を押してください。ブラウザの仕様上、ユーザー操作後に音が有効になります。
+          ※ スマホで音が小さい場合は、端末の音量・消音モード・ブラウザの音声許可を確認してください。音は以前より大きめにしています。
         </p>
       </div>
+    </section>
+
+    <section class="card">
+      <h2>トレーニング日記</h2>
+      <p class="subtitle">記録はこの端末のブラウザ内に保存されます。サーバーは不要です。</p>
+
+      <div class="form-row">
+        <label for="diaryDate">日付</label>
+        <input id="diaryDate" type="date" />
+      </div>
+
+      <div class="form-row">
+        <label for="diaryCondition">今日の状態</label>
+        <select id="diaryCondition">
+          <option value="普通">普通</option>
+          <option value="軽め">軽め</option>
+          <option value="きつい">きつい</option>
+          <option value="かなり余裕">かなり余裕</option>
+          <option value="途中で中断">途中で中断</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="diaryNote">メモ</label>
+        <textarea id="diaryNote" placeholder="例：レッグレイズがきつかった。プランクは余裕あり。"></textarea>
+      </div>
+
+      <div class="diary-actions">
+        <button id="saveDiaryBtn">記録する</button>
+        <button id="exportBtn" class="secondary">CSV出力</button>
+        <button id="clearFormBtn" class="secondary">入力クリア</button>
+        <button id="deleteAllBtn" class="danger">全記録削除</button>
+      </div>
+
+      <div id="entries" class="entries"></div>
     </section>
   </main>
 
@@ -262,6 +395,7 @@
     const workSeconds = 45;
     const restSeconds = 15;
     const rounds = 2;
+    const diaryStorageKey = "abWorkoutDiaryEntries_v1";
 
     const steps = [];
     for (let round = 1; round <= rounds; round++) {
@@ -289,6 +423,7 @@
     let running = false;
     let intervalId = null;
     let audioCtx = null;
+    let soundVolume = 0.85;
 
     const statusEl = document.getElementById("status");
     const exerciseEl = document.getElementById("exercise");
@@ -300,6 +435,15 @@
     const resetBtn = document.getElementById("resetBtn");
     const soundBtn = document.getElementById("soundBtn");
     const menuList = document.getElementById("menuList");
+
+    const diaryDateEl = document.getElementById("diaryDate");
+    const diaryConditionEl = document.getElementById("diaryCondition");
+    const diaryNoteEl = document.getElementById("diaryNote");
+    const saveDiaryBtn = document.getElementById("saveDiaryBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const clearFormBtn = document.getElementById("clearFormBtn");
+    const deleteAllBtn = document.getElementById("deleteAllBtn");
+    const entriesEl = document.getElementById("entries");
 
     function initMenu() {
       menuList.innerHTML = "";
@@ -317,6 +461,14 @@
       return `${min}:${sec}`;
     }
 
+    function todayString() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
     function ensureAudio() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -326,34 +478,50 @@
       }
     }
 
-    function beep(frequency = 880, duration = 0.16, volume = 0.18) {
+    function beep(frequency = 1200, duration = 0.22, volume = soundVolume) {
       ensureAudio();
 
       const oscillator = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
+      const compressor = audioCtx.createDynamicsCompressor();
 
-      oscillator.type = "sine";
+      oscillator.type = "square";
       oscillator.frequency.value = frequency;
-      gain.gain.value = volume;
+
+      compressor.threshold.value = -24;
+      compressor.knee.value = 30;
+      compressor.ratio.value = 12;
+      compressor.attack.value = 0.003;
+      compressor.release.value = 0.25;
+
+      gain.gain.value = Math.max(0.0001, Math.min(volume, 1));
 
       oscillator.connect(gain);
-      gain.connect(audioCtx.destination);
+      gain.connect(compressor);
+      compressor.connect(audioCtx.destination);
 
       const now = audioCtx.currentTime;
       oscillator.start(now);
+      gain.gain.setValueAtTime(gain.gain.value, now);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       oscillator.stop(now + duration);
     }
 
     function startSignal() {
-      beep(660, 0.12);
-      setTimeout(() => beep(880, 0.12), 150);
+      beep(900, 0.16, 0.8);
+      setTimeout(() => beep(1300, 0.22, 0.9), 170);
     }
 
     function finishSignal() {
-      beep(880, 0.12);
-      setTimeout(() => beep(1040, 0.12), 160);
-      setTimeout(() => beep(1320, 0.25), 320);
+      beep(1000, 0.18, 0.9);
+      setTimeout(() => beep(1300, 0.18, 0.9), 220);
+      setTimeout(() => beep(1600, 0.35, 1.0), 440);
+      if (navigator.vibrate) navigator.vibrate([200, 80, 200]);
+    }
+
+    function countdownSignal() {
+      beep(1500, 0.11, 0.7);
+      if (navigator.vibrate) navigator.vibrate(60);
     }
 
     function updateDisplay() {
@@ -422,7 +590,7 @@
         remaining--;
 
         if (remaining <= 3 && remaining > 0) {
-          beep(760, 0.08, 0.12);
+          countdownSignal();
         }
 
         updateDisplay();
@@ -468,15 +636,152 @@
       goNext();
     }
 
+    function getEntries() {
+      try {
+        return JSON.parse(localStorage.getItem(diaryStorageKey)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveEntries(entries) {
+      localStorage.setItem(diaryStorageKey, JSON.stringify(entries));
+    }
+
+    function clearForm() {
+      diaryDateEl.value = todayString();
+      diaryConditionEl.value = "普通";
+      diaryNoteEl.value = "";
+    }
+
+    function saveDiary() {
+      const date = diaryDateEl.value || todayString();
+      const condition = diaryConditionEl.value;
+      const note = diaryNoteEl.value.trim();
+
+      const entries = getEntries();
+      entries.unshift({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        date,
+        condition,
+        note,
+        createdAt: new Date().toISOString()
+      });
+
+      saveEntries(entries);
+      diaryNoteEl.value = "";
+      renderEntries();
+    }
+
+    function deleteEntry(id) {
+      const entries = getEntries().filter(entry => entry.id !== id);
+      saveEntries(entries);
+      renderEntries();
+    }
+
+    function renderEntries() {
+      const entries = getEntries();
+      entriesEl.innerHTML = "";
+
+      if (entries.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "empty";
+        empty.textContent = "まだ記録はありません。";
+        entriesEl.appendChild(empty);
+        return;
+      }
+
+      entries.forEach(entry => {
+        const item = document.createElement("div");
+        item.className = "entry";
+
+        const head = document.createElement("div");
+        head.className = "entry-head";
+
+        const info = document.createElement("div");
+        const date = document.createElement("div");
+        date.className = "entry-date";
+        date.textContent = entry.date;
+
+        const meta = document.createElement("div");
+        meta.className = "entry-meta";
+        meta.textContent = `状態：${entry.condition}`;
+
+        info.appendChild(date);
+        info.appendChild(meta);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "danger small";
+        deleteBtn.textContent = "削除";
+        deleteBtn.addEventListener("click", () => {
+          if (confirm("この記録を削除しますか？")) deleteEntry(entry.id);
+        });
+
+        head.appendChild(info);
+        head.appendChild(deleteBtn);
+
+        const note = document.createElement("div");
+        note.className = "entry-note";
+        note.textContent = entry.note || "メモなし";
+
+        item.appendChild(head);
+        item.appendChild(note);
+        entriesEl.appendChild(item);
+      });
+    }
+
+    function exportCsv() {
+      const entries = getEntries();
+
+      if (entries.length === 0) {
+        alert("出力する記録がありません。");
+        return;
+      }
+
+      const header = ["date", "condition", "note", "createdAt"];
+      const rows = entries.map(entry => [
+        entry.date,
+        entry.condition,
+        entry.note || "",
+        entry.createdAt || ""
+      ]);
+
+      const csv = [header, ...rows]
+        .map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(","))
+        .join("\n");
+
+      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ab-workout-diary-${todayString()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
     startPauseBtn.addEventListener("click", startPause);
     resetBtn.addEventListener("click", reset);
     skipBtn.addEventListener("click", skip);
     soundBtn.addEventListener("click", () => {
       startSignal();
-      setTimeout(finishSignal, 500);
+      setTimeout(finishSignal, 600);
+    });
+
+    saveDiaryBtn.addEventListener("click", saveDiary);
+    clearFormBtn.addEventListener("click", clearForm);
+    exportBtn.addEventListener("click", exportCsv);
+    deleteAllBtn.addEventListener("click", () => {
+      if (confirm("全ての記録を削除しますか？この操作は戻せません。")) {
+        saveEntries([]);
+        renderEntries();
+      }
     });
 
     initMenu();
+    clearForm();
+    renderEntries();
     updateDisplay();
   </script>
 </body>
