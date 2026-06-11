@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>腹筋HIITタイマー</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --rest: #16a34a;
+      --danger: #dc2626;
+      --border: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      background: #dbeafe;
+      color: #1e40af;
+      margin-bottom: 16px;
+    }
+
+    .status.rest {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status.finished {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .exercise {
+      font-size: 34px;
+      font-weight: 800;
+      margin: 8px 0 12px;
+      line-height: 1.25;
+    }
+
+    .timer {
+      font-variant-numeric: tabular-nums;
+      font-size: 92px;
+      font-weight: 900;
+      letter-spacing: -4px;
+      line-height: 1;
+      margin: 12px 0 20px;
+      text-align: center;
+    }
+
+    .progress-wrap {
+      width: 100%;
+      height: 16px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 12px 0 18px;
+    }
+
+    .progress {
+      height: 100%;
+      width: 100%;
+      background: var(--primary);
+      transition: width 0.2s linear, background 0.2s linear;
+    }
+
+    .progress.rest {
+      background: var(--rest);
+    }
+
+    .next {
+      color: var(--muted);
+      margin-bottom: 20px;
+      font-size: 16px;
+      min-height: 24px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      color: #ffffff;
+      background: var(--primary);
+      min-height: 56px;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    button.secondary {
+      background: #4b5563;
+    }
+
+    button.secondary:hover {
+      background: #374151;
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    button.danger:hover {
+      background: #b91c1c;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .menu {
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .menu h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+    }
+
+    ol {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    li {
+      margin: 8px 0;
+      font-size: 15px;
+      color: #374151;
+    }
+
+    .current-step {
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .hint {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 420px) {
+      .card {
+        padding: 20px;
+      }
+
+      .exercise {
+        font-size: 28px;
+      }
+
+      .timer {
+        font-size: 78px;
+      }
+
+      .buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="card">
+      <h1>腹筋HIITタイマー</h1>
+      <p class="subtitle">45秒トレーニング / 15秒休憩 / 2周</p>
+
+      <div id="status" class="status">準備</div>
+      <div id="exercise" class="exercise">スタートを押してください</div>
+      <div id="timer" class="timer">00:45</div>
+
+      <div class="progress-wrap" aria-label="進捗">
+        <div id="progress" class="progress"></div>
+      </div>
+
+      <div id="next" class="next">次：レッグレイズ</div>
+
+      <div class="buttons">
+        <button id="startPauseBtn">スタート</button>
+        <button id="skipBtn" class="secondary">次へ</button>
+        <button id="resetBtn" class="danger">リセット</button>
+        <button id="soundBtn" class="secondary">音テスト</button>
+      </div>
+
+      <div class="menu">
+        <h2>メニュー</h2>
+        <ol id="menuList"></ol>
+        <p class="hint">
+          ※ 音が鳴らない場合は、最初に「スタート」または「音テスト」を押してください。ブラウザの仕様上、ユーザー操作後に音が有効になります。
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const exercises = [
+      "レッグレイズ",
+      "リバースクランチ",
+      "プランク",
+      "マウンテンクライマー"
+    ];
+
+    const workSeconds = 45;
+    const restSeconds = 15;
+    const rounds = 2;
+
+    const steps = [];
+    for (let round = 1; round <= rounds; round++) {
+      exercises.forEach((name, index) => {
+        steps.push({
+          type: "work",
+          name,
+          duration: workSeconds,
+          label: `${round}周目：${name}`
+        });
+
+        if (!(round === rounds && index === exercises.length - 1)) {
+          steps.push({
+            type: "rest",
+            name: "休憩",
+            duration: restSeconds,
+            label: "休憩"
+          });
+        }
+      });
+    }
+
+    let currentStep = 0;
+    let remaining = steps[0].duration;
+    let running = false;
+    let intervalId = null;
+    let audioCtx = null;
+
+    const statusEl = document.getElementById("status");
+    const exerciseEl = document.getElementById("exercise");
+    const timerEl = document.getElementById("timer");
+    const progressEl = document.getElementById("progress");
+    const nextEl = document.getElementById("next");
+    const startPauseBtn = document.getElementById("startPauseBtn");
+    const skipBtn = document.getElementById("skipBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const soundBtn = document.getElementById("soundBtn");
+    const menuList = document.getElementById("menuList");
+
+    function initMenu() {
+      menuList.innerHTML = "";
+      exercises.forEach((name, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${name} 45秒 → 休憩15秒`;
+        if (index === exercises.length - 1) li.textContent = `${name} 45秒`;
+        menuList.appendChild(li);
+      });
+    }
+
+    function formatTime(seconds) {
+      const min = String(Math.floor(seconds / 60)).padStart(2, "0");
+      const sec = String(seconds % 60).padStart(2, "0");
+      return `${min}:${sec}`;
+    }
+
+    function ensureAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+    }
+
+    function beep(frequency = 880, duration = 0.16, volume = 0.18) {
+      ensureAudio();
+
+      const oscillator = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.value = frequency;
+      gain.gain.value = volume;
+
+      oscillator.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+      oscillator.start(now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      oscillator.stop(now + duration);
+    }
+
+    function startSignal() {
+      beep(660, 0.12);
+      setTimeout(() => beep(880, 0.12), 150);
+    }
+
+    function finishSignal() {
+      beep(880, 0.12);
+      setTimeout(() => beep(1040, 0.12), 160);
+      setTimeout(() => beep(1320, 0.25), 320);
+    }
+
+    function updateDisplay() {
+      const step = steps[currentStep];
+      const total = step ? step.duration : 1;
+      const progress = step ? (remaining / total) * 100 : 0;
+
+      timerEl.textContent = formatTime(remaining);
+      progressEl.style.width = `${progress}%`;
+
+      statusEl.className = "status";
+      progressEl.className = "progress";
+
+      if (!step) {
+        statusEl.textContent = "完了";
+        statusEl.classList.add("finished");
+        exerciseEl.textContent = "お疲れさまでした";
+        nextEl.textContent = "トレーニング終了";
+        startPauseBtn.textContent = "スタート";
+        return;
+      }
+
+      if (step.type === "work") {
+        statusEl.textContent = "トレーニング";
+        exerciseEl.textContent = step.label;
+      } else {
+        statusEl.textContent = "休憩";
+        statusEl.classList.add("rest");
+        progressEl.classList.add("rest");
+        exerciseEl.textContent = "休憩";
+      }
+
+      const nextStep = steps[currentStep + 1];
+      nextEl.textContent = nextStep ? `次：${nextStep.label}` : "次：終了";
+
+      [...menuList.children].forEach(li => li.classList.remove("current-step"));
+      if (step.type === "work") {
+        const exerciseIndex = exercises.indexOf(step.name);
+        if (exerciseIndex >= 0) menuList.children[exerciseIndex].classList.add("current-step");
+      }
+    }
+
+    function goNext() {
+      currentStep++;
+
+      if (currentStep >= steps.length) {
+        currentStep = steps.length;
+        remaining = 0;
+        running = false;
+        clearInterval(intervalId);
+        intervalId = null;
+        finishSignal();
+        updateDisplay();
+        return;
+      }
+
+      remaining = steps[currentStep].duration;
+      startSignal();
+      updateDisplay();
+    }
+
+    function tick() {
+      if (!running) return;
+
+      if (remaining > 1) {
+        remaining--;
+
+        if (remaining <= 3 && remaining > 0) {
+          beep(760, 0.08, 0.12);
+        }
+
+        updateDisplay();
+      } else {
+        remaining = 0;
+        updateDisplay();
+        goNext();
+      }
+    }
+
+    function startPause() {
+      ensureAudio();
+
+      if (currentStep >= steps.length) {
+        reset();
+      }
+
+      running = !running;
+      startPauseBtn.textContent = running ? "一時停止" : "再開";
+
+      if (running) {
+        startSignal();
+        if (!intervalId) {
+          intervalId = setInterval(tick, 1000);
+        }
+      }
+
+      updateDisplay();
+    }
+
+    function reset() {
+      running = false;
+      clearInterval(intervalId);
+      intervalId = null;
+      currentStep = 0;
+      remaining = steps[0].duration;
+      startPauseBtn.textContent = "スタート";
+      updateDisplay();
+    }
+
+    function skip() {
+      ensureAudio();
+      goNext();
+    }
+
+    startPauseBtn.addEventListener("click", startPause);
+    resetBtn.addEventListener("click", reset);
+    skipBtn.addEventListener("click", skip);
+    soundBtn.addEventListener("click", () => {
+      startSignal();
+      setTimeout(finishSignal, 500);
+    });
+
+    initMenu();
+    updateDisplay();
+  </script>
+</body>
+</html>
