@@ -115,6 +115,19 @@
       text-align: center;
     }
 
+    .rep-counter {
+      font-size: 24px;
+      font-weight: 900;
+      text-align: center;
+      margin: -8px 0 18px;
+      color: var(--primary);
+      min-height: 34px;
+    }
+
+    .rep-counter.resting {
+      color: var(--muted);
+    }
+
     .progress-wrap {
       width: 100%;
       height: 16px;
@@ -396,7 +409,7 @@
     <section class="card">
       <h1>筋トレHIITタイマー</h1>
       <p class="subtitle">
-        腹筋・胸筋/腕を切り替え可能。45秒トレーニング / 15秒休憩 / セット数変更可。
+        腹筋・胸筋/腕を切り替え可能。30秒トレーニング / 15秒休憩 / セット数変更可。
       </p>
 
       <div class="settings full">
@@ -427,7 +440,8 @@
 
       <div id="status" class="status">準備</div>
       <div id="exercise" class="exercise">スタートを押してください</div>
-      <div id="timer" class="timer">00:45</div>
+      <div id="timer" class="timer">00:30</div>
+      <div id="repCounter" class="rep-counter"></div>
 
       <div class="progress-wrap">
         <div id="progress" class="progress"></div>
@@ -560,26 +574,34 @@
         exercises: [
           {
             name: "ワイドプッシュアップ",
-            note: "胸筋メイン。手幅を広め、胸を床に近づける。"
+            note: "胸筋メイン。10秒に1回ペースで丁寧に下ろして押す。",
+            countable: true,
+            repLabel: "腕立て"
           },
           {
             name: "ナロープッシュアップ",
-            note: "腕メイン。手幅を狭め、脇を締める。"
+            note: "腕メイン。10秒に1回ペースで脇を締めて押す。",
+            countable: true,
+            repLabel: "腕立て"
           },
           {
             name: "プッシュアップホールド",
-            note: "胸を床に近づけた位置で耐える。きつければ膝つき。"
+            note: "胸を床に近づけた位置で耐える。きつければ膝つき。",
+            countable: false
           },
           {
             name: "ショルダータップ",
-            note: "腕立て姿勢で左右の肩を交互にタッチ。体幹も使う。"
+            note: "腕立て姿勢で左右の肩を交互にタッチ。10秒に1回ペースで左右セット。",
+            countable: true,
+            repLabel: "左右タッチ"
           }
         ]
       }
     };
 
-    const workSeconds = 45;
+    const workSeconds = 30;
     const restSeconds = 15;
+    const repIntervalSeconds = 5;
     const diaryStorageKey = "workoutDiaryEntries_v4";
 
     let workoutType = "abs";
@@ -598,6 +620,7 @@
     const statusEl = getElement("status");
     const exerciseEl = getElement("exercise");
     const timerEl = getElement("timer");
+    const repCounterEl = getElement("repCounter");
     const progressEl = getElement("progress");
     const nextEl = getElement("next");
     const startPauseBtn = getElement("startPauseBtn");
@@ -642,7 +665,9 @@
             type: "work",
             name: exercise.name,
             duration: workSeconds,
-            label: `${set}セット目：${exercise.name}`
+            label: `${set}セット目：${exercise.name}`,
+            countable: Boolean(exercise.countable),
+            repLabel: exercise.repLabel || "回数"
           });
 
           const isLastExercise = index === exercises.length - 1;
@@ -672,7 +697,11 @@
       menu.exercises.forEach((exercise, index) => {
         const item = document.createElement("li");
 
-        item.textContent = `${exercise.name} 45秒`;
+        const repGuide = exercise.countable
+          ? `（5秒に1回：目標${Math.floor(workSeconds / repIntervalSeconds)}回）`
+          : "";
+
+        item.textContent = `${exercise.name} 30秒${repGuide}`;
 
         if (index !== menu.exercises.length - 1) {
           item.textContent += " → 休憩15秒";
@@ -689,6 +718,39 @@
       const restSecondsText = String(seconds % 60).padStart(2, "0");
 
       return `${minutes}:${restSecondsText}`;
+    }
+
+    function updateRepCounter(step) {
+      repCounterEl.classList.remove("resting");
+
+      if (!step) {
+        repCounterEl.textContent = "";
+        return;
+      }
+
+      if (step.type === "rest") {
+        repCounterEl.textContent = "次の種目に備える時間です";
+        repCounterEl.classList.add("resting");
+        return;
+      }
+
+      if (!step.countable) {
+        repCounterEl.textContent = "フォーム重視で30秒キープ";
+        return;
+      }
+
+      const elapsed = step.duration - remaining;
+      const completedReps = Math.min(
+        Math.floor(elapsed / repIntervalSeconds),
+        Math.floor(step.duration / repIntervalSeconds)
+      );
+      const targetReps = Math.floor(step.duration / repIntervalSeconds);
+      const nextRep = Math.min(completedReps + 1, targetReps);
+      const secondsToNextRep = repIntervalSeconds - (elapsed % repIntervalSeconds);
+
+      repCounterEl.textContent =
+        `${step.repLabel} ${completedReps}/${targetReps}回 ` +
+        `｜ 次の1回まで ${secondsToNextRep}秒`;
     }
 
     function todayString() {
@@ -784,6 +846,7 @@
 
       timerEl.textContent = formatTime(remaining);
       progressEl.style.width = `${progress}%`;
+      updateRepCounter(step);
 
       statusEl.className = "status";
       progressEl.className = "progress";
@@ -838,6 +901,7 @@
         currentStep = steps.length;
         remaining = 0;
         running = false;
+        repCounterEl.textContent = "";
 
         clearInterval(intervalId);
         intervalId = null;
@@ -861,6 +925,13 @@
 
       if (remaining > 1) {
         remaining--;
+
+        const step = steps[currentStep];
+        const elapsed = step ? step.duration - remaining : 0;
+
+        if (step && step.countable && step.type === "work" && elapsed > 0 && elapsed % repIntervalSeconds === 0) {
+          countdownSignal();
+        }
 
         if (remaining <= 3 && remaining > 0) {
           countdownSignal();
@@ -913,6 +984,11 @@
 
     function skip() {
       ensureAudio();
+
+      if (currentStep >= steps.length) {
+        return;
+      }
+
       goNext();
     }
 
