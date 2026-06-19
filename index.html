@@ -407,10 +407,7 @@
 <body>
   <main class="app">
     <section class="card">
-      <h1>筋トレHIITタイマー</h1>
-      <p class="subtitle">
-        腹筋・胸筋/腕を切り替え可能。30秒トレーニング / 15秒休憩 / セット数変更可。
-      </p>
+      <h1>筋トレタイマー</h1>
 
       <div class="settings full">
         <div>
@@ -425,14 +422,14 @@
       <div class="settings">
         <div>
           <label for="setCount">セット数</label>
-          <input id="setCount" type="number" min="1" max="10" value="2" />
+          <input id="setCount" type="number" min="1" max="10" value="1" />
         </div>
 
         <div>
           <label for="soundVolume">音量</label>
           <select id="soundVolume">
-            <option value="0.65">普通</option>
-            <option value="0.85" selected>大きめ</option>
+            <option value="0.65">小さめ</option>
+            <option value="0.85" selected>普通</option>
             <option value="1">最大</option>
           </select>
         </div>
@@ -510,7 +507,7 @@
 
       <div class="form-row">
         <label for="completedSets">完了セット数</label>
-        <input id="completedSets" type="number" min="0" max="10" value="2" />
+        <input id="completedSets" type="number" min="0" max="10" value="1" />
       </div>
 
       <div class="form-row">
@@ -601,11 +598,11 @@
 
     const workSeconds = 30;
     const restSeconds = 15;
-    const repIntervalSeconds = 5;
+    const repIntervalSeconds = 3;
     const diaryStorageKey = "workoutDiaryEntries_v4";
 
     let workoutType = "abs";
-    let setCount = 2;
+    let setCount = 1;
     let steps = [];
     let currentStep = 0;
     let remaining = workSeconds;
@@ -698,7 +695,7 @@
         const item = document.createElement("li");
 
         const repGuide = exercise.countable
-          ? `（5秒に1回：目標${Math.floor(workSeconds / repIntervalSeconds)}回）`
+          ? `（3秒に1回：目標${Math.floor(workSeconds / repIntervalSeconds)}回）`
           : "";
 
         item.textContent = `${exercise.name} 30秒${repGuide}`;
